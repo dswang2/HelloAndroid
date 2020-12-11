@@ -1,5 +1,6 @@
 package com.example.pekon.helloandroid.net;
 
+import com.example.pekon.helloandroid.entity.JsonsRootBean;
 import com.example.pekon.helloandroid.entity.WanAndroidResponseBean;
 
 import io.reactivex.Observable;
@@ -14,4 +15,7 @@ public interface WanAdroidApi {
 
     @GET("wxarticle/chapters/json")
     Observable<WanAndroidResponseBean> getWxarticle();
+
+    @GET("article/list/0/json")
+    Observable<JsonsRootBean> getArticle();
 }
