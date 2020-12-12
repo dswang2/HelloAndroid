@@ -7,11 +7,11 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <supports-screens
-        android:smallScreens="true"
-        android:normalScreens="true"
+        android:anyDensity="true"
         android:largeScreens="true"
+        android:normalScreens="true"
         android:resizeable="true"
-        android:anyDensity="true"/>
+        android:smallScreens="true" />
 
     <application
         android:name="com.example.pekon.component.MyApplication"
@@ -21,7 +21,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
+        <activity android:name=".AnimatorTestActivity"></activity>
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -29,7 +29,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ScreenInfoActivity"></activity>
+        <activity android:name=".ScreenInfoActivity" />
     </application>
 
 </manifest>
