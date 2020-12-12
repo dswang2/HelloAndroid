@@ -2,6 +2,7 @@ package com.example.pekon.helloandroid.net;
 
 import com.example.pekon.helloandroid.entity.Categories;
 
+import io.reactivex.Observable;
 import retrofit2.Call;
 import retrofit2.http.GET;
 
@@ -14,5 +15,8 @@ public interface CommonGankApi {
 
     @GET("xiandu/categories")
     Call<Categories> getCategories();
+
+    @GET("xiandu/categories")
+    Observable<Categories> getObservableCategories();
 
 }

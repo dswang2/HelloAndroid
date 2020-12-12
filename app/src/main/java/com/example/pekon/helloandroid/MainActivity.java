@@ -14,9 +14,13 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.pekon.component.MyApplication;
 import com.example.pekon.helloandroid.entity.Categories;
+import com.example.pekon.helloandroid.entity.JsonsRootBean;
 import com.example.pekon.helloandroid.entity.PhoneInfoEntity;
+import com.example.pekon.helloandroid.entity.WanAndroidResponseBean;
 import com.example.pekon.helloandroid.greendao.gen.PhoneInfoEntityDao;
-import com.example.pekon.helloandroid.net.ApiRetrofit;
+import com.example.pekon.helloandroid.net.CommonGankRetrofit;
+import com.example.pekon.helloandroid.net.WanAndroidRetrofit;
+import com.google.gson.Gson;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -25,10 +29,19 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
+import io.reactivex.ObservableSource;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Button btn_screen_info;
     private Button tv_exception_test;
+    private Button tv_retrofit_rxjava;
+    private Button tv_Animator;
     private TextView tv_screen_info;
     private ImageView iv_bg;
 
@@ -41,6 +54,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btn_screen_info.setOnClickListener(this);
         tv_exception_test = (Button)findViewById(R.id.tv_exception_test);
         tv_exception_test.setOnClickListener(this);
+        tv_retrofit_rxjava = (Button)findViewById(R.id.tv_retrofit_rxjava);
+        tv_retrofit_rxjava.setOnClickListener(this);
+        tv_Animator = (Button)findViewById(R.id.tv_Animator);
+        tv_Animator.setOnClickListener(this);
         tv_screen_info = (TextView) findViewById(R.id.tv_screen_info);
         iv_bg = (ImageView) findViewById(R.id.iv_bg);
         initBackGround();
@@ -72,17 +89,116 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 // exceptionTest();
                 retrofitTest();
+                break;
+            case R.id.tv_retrofit_rxjava:
+                if(tv_retrofit_rxjava.getTag() == null){
+                    tv_retrofit_rxjava.setTag(true);
+                }else {
+                    tv_retrofit_rxjava.setTag(!(boolean)tv_retrofit_rxjava.getTag());
+                }
+                retrofitRxjavaTest();
+                break;
+            case R.id.tv_Animator:
+                startActivity(new Intent(this,AnimatorTestActivity.class));
+                break;
         }
+    }
+
+    private void retrofitRxjavaTest() {
+        //异步测试
+        tv_retrofit_rxjava.setClickable(false);
+        Log.e("dsw", "Retrofit+Rxjava异步测试");
+        CommonGankRetrofit.getObservableCategories()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnNext(new Consumer<Categories>() {
+                    @Override
+                    public void accept(Categories categories) throws Exception {
+                        if((boolean)tv_retrofit_rxjava.getTag()){
+                            tv_screen_info.setText("Retrofit+Rxjava异步测试▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲\n"
+                                    + categories.toString());
+                        }else {
+                            tv_screen_info.setText("Retrofit+Rxjava异步测试△△△△△△△△△△△\n"
+                                    + categories.toString());
+                        }
+
+                    }
+                })
+                .doOnError(new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        // 异常处理
+                        tv_screen_info.setText("Retrofit+Rxjava异步测试数据错误!1111111111111111");
+                    }
+                })
+                .observeOn(Schedulers.io())
+                .flatMap(new Function<Categories, ObservableSource<WanAndroidResponseBean>>() {
+                    @Override
+                    public ObservableSource<WanAndroidResponseBean> apply(@NonNull Categories categories) throws Exception {
+                        EventEntity eventEntity = new EventEntity();
+                        eventEntity.setMessage(categories.toString());
+                        if((boolean)tv_retrofit_rxjava.getTag()){
+                            tv_retrofit_rxjava.setClickable(true);
+                            return null;
+                        }
+                        // 利用上一次的请求数据，获得下一次的请求结果,
+                        // 可能是网络请求组，请求结果是一个 Observable
+                        // 这里手动发出一个请求
+                        return WanAndroidRetrofit.getWanAdroidApi().getWxarticle();
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnNext(new Consumer<WanAndroidResponseBean>() {
+                    @Override
+                    public void accept(WanAndroidResponseBean wanAndroidResponseBean) throws Exception {
+                        tv_screen_info.setText("Retrofit+Rxjava+公众号列表2222222222222\n" + wanAndroidResponseBean);
+                        tv_retrofit_rxjava.setClickable(true);
+                    }
+                })
+                .doOnError(new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        tv_retrofit_rxjava.setClickable(true);
+                    }
+                })
+                .observeOn(Schedulers.io())
+                .flatMap(new Function<WanAndroidResponseBean, ObservableSource<JsonsRootBean>>() {
+                    @Override
+                    public ObservableSource<JsonsRootBean> apply(@NonNull WanAndroidResponseBean wanAndroidResponseBean) throws Exception {
+                        return WanAndroidRetrofit.getWanAdroidApi().getArticle();
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnNext(new Consumer<JsonsRootBean>() {
+                    @Override
+                    public void accept(JsonsRootBean jsonsRootBean) throws Exception {
+                        String json = new Gson().toJson(jsonsRootBean);
+                        tv_screen_info.setText("Retrofit+Rxjava+文章首页列表33333333333\n" + json);
+                    }
+                })
+                .doOnError(new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        tv_retrofit_rxjava.setClickable(true);
+                    }
+                })
+                .subscribe();
+
+
+
     }
 
     private void retrofitTest() {
         if((boolean)tv_exception_test.getTag()){
             //异步测试
-            Log.e("dsw", "异步测试");
-            ApiRetrofit.getGankCategories(new ApiRetrofit.ResultCallback<Categories>() {
+            Log.e("dsw", "Retrofit异步测试");
+            CommonGankRetrofit.getGankCategories(new CommonGankRetrofit.ResultCallback<Categories>() {
                 @Override
                 public void onSuccess(Categories results) {
-                    tv_screen_info.setText(results.toString());
+                    tv_screen_info.setText("Retrofit异步测试"
+                            + results.toString());
                 }
                 @Override
                 public void onError(String message) {
@@ -91,14 +207,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             });
         }else {
             //同步测试
-            Log.e("dsw", "同步测试");
+            Log.e("dsw", "Retrofit同步测试");
             //同步方式,比较麻烦，下面测试都是异步方法测试
             Callable<Categories> categoriesCallable = new Callable<Categories>() {
                 @Override
                 public Categories call() throws Exception {
-                    Categories responseEntity = ApiRetrofit.getGankCategoriesSync();
-                    tv_screen_info.setText(responseEntity.toString());
-                    return ApiRetrofit.getGankCategoriesSync();
+                    Categories responseEntity = CommonGankRetrofit.getGankCategoriesSync();
+                    tv_screen_info.setText("Retrofit同步测试"
+                            + responseEntity.toString());
+                    return CommonGankRetrofit.getGankCategoriesSync();
                 }
             };
             try {

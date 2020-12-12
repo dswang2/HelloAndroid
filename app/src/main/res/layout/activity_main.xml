@@ -34,7 +34,21 @@
             android:id="@+id/tv_exception_test"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Test"
+            android:text="Retrofit Test"
+            android:visibility="visible"/>
+
+        <Button
+            android:id="@+id/tv_retrofit_rxjava"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Retrofit+Rxjava Test"
+            android:visibility="visible"/>
+
+        <Button
+            android:id="@+id/tv_Animator"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="动画测试"
             android:visibility="visible"/>
 
         <TextView

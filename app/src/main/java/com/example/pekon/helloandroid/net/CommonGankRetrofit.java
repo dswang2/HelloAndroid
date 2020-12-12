@@ -4,16 +4,18 @@ import com.example.pekon.helloandroid.entity.Categories;
 
 import java.io.IOException;
 
+import io.reactivex.Observable;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * create by dsw on 2020-12-05
  **/
-public class ApiRetrofit {
+public class CommonGankRetrofit {
     public static final String BASE_URL = "https://gank.io/api/";
 
     private static CommonGankApi sCommonGankApi;
@@ -22,6 +24,7 @@ public class ApiRetrofit {
             sCommonGankApi = new Retrofit.Builder()
                     .baseUrl(BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create())
+                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .build().create(CommonGankApi.class);
         }
         return sCommonGankApi;
@@ -50,6 +53,11 @@ public class ApiRetrofit {
     public static Categories getGankCategoriesSync() throws IOException {
         return getCommonGankApi().getCategories().execute().body();
     }
+
+    public static Observable<Categories> getObservableCategories(){
+        return getCommonGankApi().getObservableCategories();
+    }
+
     public interface ResultCallback<T> {
         void onSuccess(T result);
         void onError(String message);
