@@ -30,6 +30,14 @@
             </intent-filter>
         </activity>
         <activity android:name=".ScreenInfoActivity" />
+        <activity android:name=".AlarmManagerTestActivity" />
+        <receiver android:name=".AlarmReceive" >
+            <intent-filter>
+                <action android:name="com.e_eduspace.TIMER_ACTION_REPEATING" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
+        <service android:name=".AlarmService"/>
     </application>
 
 </manifest>

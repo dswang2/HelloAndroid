@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button tv_exception_test;
     private Button tv_retrofit_rxjava;
     private Button tv_Animator;
+    private Button tv_alarmManager;
     private TextView tv_screen_info;
     private ImageView iv_bg;
 
@@ -58,6 +59,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tv_retrofit_rxjava.setOnClickListener(this);
         tv_Animator = (Button)findViewById(R.id.tv_Animator);
         tv_Animator.setOnClickListener(this);
+        tv_alarmManager = (Button)findViewById(R.id.tv_alarmManager);
+        tv_alarmManager.setOnClickListener(this);
         tv_screen_info = (TextView) findViewById(R.id.tv_screen_info);
         iv_bg = (ImageView) findViewById(R.id.iv_bg);
         initBackGround();
@@ -100,6 +103,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.tv_Animator:
                 startActivity(new Intent(this,AnimatorTestActivity.class));
+                break;
+            case R.id.tv_alarmManager:
+                startActivity(new Intent(this,AlarmManagerTestActivity.class));
                 break;
         }
     }
