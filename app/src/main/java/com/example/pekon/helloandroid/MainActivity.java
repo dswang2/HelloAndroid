@@ -2,6 +2,7 @@ package com.example.pekon.helloandroid;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -29,9 +30,12 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
+import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
+import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
@@ -114,12 +118,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //异步测试
         tv_retrofit_rxjava.setClickable(false);
         Log.e("dsw", "Retrofit+Rxjava异步测试");
+        Observer<String> observer = new Observer<String>() {
+
+            @Override
+            public void onSubscribe(@NonNull Disposable d) {
+
+            }
+
+            @Override
+            public void onNext(@NonNull String s) {
+
+            }
+
+            @Override
+            public void onError(@NonNull Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        };
+        Log.e("dswrxjava", "第1次请求开始执行");
         CommonGankRetrofit.getObservableCategories()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext(new Consumer<Categories>() {
                     @Override
                     public void accept(Categories categories) throws Exception {
+                        Log.e("dswrxjava", "第1次结果返回，开始处理");
                         if((boolean)tv_retrofit_rxjava.getTag()){
                             tv_screen_info.setText("Retrofit+Rxjava异步测试▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲\n"
                                     + categories.toString());
@@ -127,44 +155,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             tv_screen_info.setText("Retrofit+Rxjava异步测试△△△△△△△△△△△\n"
                                     + categories.toString());
                         }
-
+                        SystemClock.sleep(5000);
+                        Log.e("dswrxjava", "第1次结果返回，处理结束");
                     }
                 })
                 .doOnError(new Consumer<Throwable>() {
                     @Override
                     public void accept(Throwable throwable) throws Exception {
+                        Log.e("dswrxjava", "第1次结果错误返回，开始处理");
                         // 异常处理
                         tv_screen_info.setText("Retrofit+Rxjava异步测试数据错误!1111111111111111");
                     }
                 })
-                .observeOn(Schedulers.io())
-                .flatMap(new Function<Categories, ObservableSource<WanAndroidResponseBean>>() {
+                .flatMap(new Function<Categories, ObservableSource<String>>() {
                     @Override
-                    public ObservableSource<WanAndroidResponseBean> apply(@NonNull Categories categories) throws Exception {
-                        EventEntity eventEntity = new EventEntity();
-                        eventEntity.setMessage(categories.toString());
-                        if((boolean)tv_retrofit_rxjava.getTag()){
-                            tv_retrofit_rxjava.setClickable(true);
-                            return null;
-                        }
-                        // 利用上一次的请求数据，获得下一次的请求结果,
-                        // 可能是网络请求组，请求结果是一个 Observable
-                        // 这里手动发出一个请求
-                        return WanAndroidRetrofit.getWanAdroidApi().getWxarticle();
+                    public ObservableSource<String> apply(@NonNull Categories categories) throws Exception {
+                        return Observable.just("test");
                     }
                 })
+                .subscribe(observer);
+        Log.e("dswrxjava", "第2次请求开始执行");
+        WanAndroidRetrofit.getWanAdroidApi().getWxarticle()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext(new Consumer<WanAndroidResponseBean>() {
                     @Override
                     public void accept(WanAndroidResponseBean wanAndroidResponseBean) throws Exception {
+                        Log.e("dswrxjava", "第2次结果返回，开始处理");
                         tv_screen_info.setText("Retrofit+Rxjava+公众号列表2222222222222\n" + wanAndroidResponseBean);
                         tv_retrofit_rxjava.setClickable(true);
+                        Log.e("dswrxjava", "第2次结果返回，处理结束");
                     }
                 })
                 .doOnError(new Consumer<Throwable>() {
                     @Override
                     public void accept(Throwable throwable) throws Exception {
+                        Log.e("dswrxjava", "第2次结果错误返回，开始处理");
                         tv_retrofit_rxjava.setClickable(true);
                     }
                 })
@@ -190,10 +216,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         tv_retrofit_rxjava.setClickable(true);
                     }
                 })
-                .subscribe();
-
-
-
+                .flatMap(new Function<JsonsRootBean, ObservableSource<String>>() {
+                    @Override
+                    public ObservableSource<String> apply(@NonNull JsonsRootBean jsonsRootBean) throws Exception {
+                        return Observable.just("test");
+                    }
+                })
+                .subscribe(observer);
     }
 
     private void retrofitTest() {
